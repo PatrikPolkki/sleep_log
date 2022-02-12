@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Sleep Log</string>
+    <string name="default_text">Add your first sleep</string>
 </resources>
