@@ -13,4 +13,14 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="SleepItemTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SleepItemContent">
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textSize">20sp</item>
+    </style>
 </resources>
