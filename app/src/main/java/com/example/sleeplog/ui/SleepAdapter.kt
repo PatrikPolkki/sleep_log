@@ -6,19 +6,29 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sleeplog.database.Sleep
 import com.example.sleeplog.databinding.SleepItemBinding
 
-class SleepAdapter() : RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
+class SleepAdapter(private val cellClickListener: CellClickListener) :
+    RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
 
     private val sleepList: MutableList<Sleep> = mutableListOf()
+    private var cellIndex: Int? = null
 
-    fun addSleep(list: List<Sleep>) {
-        sleepList.clear()
+    fun addSleepList(list: List<Sleep>) {
         sleepList.let {
-            sleepList.addAll(list)
-            notifyItemRangeInserted(it.size, list.size)
+            if (list.size != it.size) {
+                sleepList.clear()
+                sleepList.addAll(list)
+                notifyItemRangeInserted(it.size, list.size)
+            } else {
+                cellIndex?.let { index ->
+                    sleepList.clear()
+                    sleepList.addAll(list)
+                    notifyItemChanged(index)
+                }
+            }
         }
     }
 
-    fun deleteSleep(pos: Int): Long {
+    fun deleteSleepItem(pos: Int): Long {
         val item = sleepList[pos]
         sleepList.removeAt(pos)
         notifyItemRemoved(pos)
@@ -26,14 +36,8 @@ class SleepAdapter() : RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
     }
 
 
-    inner class ViewHolder(private val binding: SleepItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Sleep) {
-            binding.sleepItem = item
-
-            binding.executePendingBindings()
-        }
-    }
+    inner class ViewHolder(val binding: SleepItemBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = SleepItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -42,8 +46,21 @@ class SleepAdapter() : RecyclerView.Adapter<SleepAdapter.ViewHolder>() {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = sleepList[position]
-        holder.bind(item)
 
+        holder.binding.sleepItem = item
+        holder.itemView.setOnClickListener {
+            cellClickListener.onCellClickListener(
+                item.sleepDuration,
+                item.sleepQuality,
+                item.createdAt,
+                item.id
+            )
+            cellIndex = holder.adapterPosition
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
     }
 
     override fun getItemCount(): Int = sleepList.size

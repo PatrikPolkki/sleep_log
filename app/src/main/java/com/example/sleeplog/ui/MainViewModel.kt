@@ -1,7 +1,5 @@
 package com.example.sleeplog.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sleeplog.database.Sleep
@@ -9,39 +7,68 @@ import com.example.sleeplog.database.SleepDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val sleepdao: SleepDao) : ViewModel() {
 
-    private val mSleepList: MutableLiveData<List<Sleep>> by lazy {
-        MutableLiveData<List<Sleep>>()
-    }
-    val sleepList: LiveData<List<Sleep>>
-        get() = mSleepList
-
     fun getAllSleep(): Flow<List<Sleep>> {
         return sleepdao.getAll()
     }
 
-    /*
-        init {
-            viewModelScope.launch(Dispatchers.IO) {
-                sleepdao.getAll().collect {
-                    mSleepList.postValue(it)
-                }
-            }
+    suspend fun check(date: Date): Long? {
+        return sleepdao.checkIfExists(date)
+    }
+
+    suspend fun checkIfExists(date: Date): Flow<Long?> {
+        return flow {
+            val data = sleepdao.checkIfExists(date)
+            emit(data)
+        }.flowOn(Dispatchers.IO)
+    }
+
+    fun addSleep(date: Date, duration: Long, quality: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            sleepdao.insertSleep(Sleep(0, date, duration, quality))
         }
-    */
-    fun addSleep(duration: Float, quality: String) {
-        viewModelScope.launch(Dispatchers.Default) {
-            sleepdao.insertSleep(Sleep(0, duration, quality))
+    }
+
+    fun updateSleepDuration(duration: Long, id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            sleepdao.updateSleepDuration(duration, id)
+        }
+    }
+
+    fun updateSleepQuality(quality: Int, id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            sleepdao.updateSleepQuality(quality, id)
+        }
+    }
+
+    fun replaceSleepDuration(duration: Long, date: Date) {
+        viewModelScope.launch(Dispatchers.IO) {
+            sleepdao.replaceSleepDuration(duration, date)
+        }
+    }
+
+    fun replaceSleepQuality(quality: Int, date: Date) {
+        viewModelScope.launch(Dispatchers.IO) {
+            sleepdao.replaceSleepQuality(quality, date)
+        }
+    }
+
+    fun replaceAll(duration: Long, quality: Int, date: Date) {
+        viewModelScope.launch(Dispatchers.IO) {
+            sleepdao.replaceAll(duration, quality, date)
         }
     }
 
     fun deleteSleep(id: Long) {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.IO) {
             sleepdao.deleteSleep(id)
         }
     }

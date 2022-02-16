@@ -2,5 +2,15 @@
     <string name="app_name">Sleep Log</string>
     <string name="default_text">Add your first sleep</string>
     <string name="duration">Duration</string>
+    <string name="duration_time">%02d.%02d Hours</string>
     <string name="quality">Quality</string>
+    <string name="fab_text">Add Sleep</string>
+    <string name="minutes">Min</string>
+    <string name="hours">H</string>
+    <string name="chip_poor">Poor</string>
+    <string name="chip_fair">Fair</string>
+    <string name="chip_average">Average</string>
+    <string name="chip_good">Good</string>
+    <string name="chip_very_good">Very Good</string>
+    <string name="dialog_title">Add you Sleep</string>
 </resources>
