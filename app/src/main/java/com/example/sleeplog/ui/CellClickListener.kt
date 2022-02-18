@@ -1,7 +1,7 @@
 package com.example.sleeplog.ui
 
-import java.util.*
+import com.example.sleeplog.database.Sleep
 
 interface CellClickListener {
-    fun onCellClickListener(duration: Long, quality: Int, date: Date, id: Long)
+    fun onCellClickListener(sleepItem: Sleep)
 }

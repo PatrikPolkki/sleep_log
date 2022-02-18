@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Sleep Log</string>
+    <string name="app_name">SLEEP LOG</string>
     <string name="default_text">Add your first sleep</string>
     <string name="duration">Duration</string>
-    <string name="duration_time">%02d.%02d Hours</string>
+    <string name="duration_time">%02d.%02d H</string>
     <string name="quality">Quality</string>
     <string name="fab_text">Add Sleep</string>
     <string name="minutes">Min</string>
@@ -12,5 +12,12 @@
     <string name="chip_average">Average</string>
     <string name="chip_good">Good</string>
     <string name="chip_very_good">Very Good</string>
-    <string name="dialog_title">Add you Sleep</string>
+    <string name="dialog_title_add">ADD YOUR SLEEP</string>
+    <string name="dialog_title_update">UPDATE YOUR SLEEP</string>
+    <string name="date">Date</string>
+    <string name="edit">Edit</string>
+    <string name="average_sleep">AVERAGE SLEEP</string>
+    <string name="last_record">LAST RECORD</string>
+    <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
 </resources>

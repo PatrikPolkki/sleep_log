@@ -6,23 +6,24 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment.STYLE_NORMAL
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sleeplog.R
+import com.example.sleeplog.database.Sleep
 import com.example.sleeplog.databinding.FragmentMainBinding
-import com.example.sleeplog.databinding.SleepDialogBinding
+import com.example.sleeplog.ui.dialog.DialogFragment
 import com.example.sleeplog.utils.DateAndTimeFormatter
 import com.example.sleeplog.utils.SwipeToDelete
-import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -32,7 +33,7 @@ class MainFragment : Fragment(), CellClickListener {
     lateinit var dateFormatter: DateAndTimeFormatter
 
     private lateinit var binding: FragmentMainBinding
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,10 +42,22 @@ class MainFragment : Fragment(), CellClickListener {
     ): View {
         binding = FragmentMainBinding.inflate(layoutInflater)
 
+        binding.apply {
+            mainViewModel = viewModel
+            lifecycleOwner = this@MainFragment
+        }
+
         binding.sleepRv.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = SleepAdapter(this@MainFragment)
+            val itemDecoration: DividerItemDecoration =
+                DividerItemDecoration(context, LinearLayoutManager.VERTICAL).apply {
+                    ContextCompat.getDrawable(context, R.drawable.divider)?.let { setDrawable(it) }
+                }
+            addItemDecoration(itemDecoration)
         }
+
+
         setSleepListToRV()
 
         return binding.root
@@ -63,7 +76,7 @@ class MainFragment : Fragment(), CellClickListener {
                 if (it.isNotEmpty()) {
                     binding.sleepRv.visibility = View.VISIBLE
                     binding.defaultText.visibility = View.GONE
-                    adapter.addSleepList(it)
+                    adapter.submitList(it)
                 } else {
                     binding.sleepRv.visibility = View.GONE
                     binding.defaultText.visibility = View.VISIBLE
@@ -78,7 +91,7 @@ class MainFragment : Fragment(), CellClickListener {
                 val adapter = binding.sleepRv.adapter as SleepAdapter
                 when (direction) {
                     ItemTouchHelper.LEFT -> {
-                        val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+                        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
                         builder.apply {
                             setTitle("Delete Sleep Item")
                             setMessage("Are you sure you want to delete this sleep item?")
@@ -86,8 +99,8 @@ class MainFragment : Fragment(), CellClickListener {
                                 adapter.notifyItemChanged(viewHolder.adapterPosition)
                             }
                             setPositiveButton("Delete") { _, _ ->
-                                val id = adapter.deleteSleepItem(viewHolder.adapterPosition)
-                                viewModel.deleteSleep(id)
+                                val sleepItem = adapter.currentList[viewHolder.adapterPosition]
+                                viewModel.deleteSleep(sleepItem.id)
                             }
                             show()
                         }
@@ -99,179 +112,27 @@ class MainFragment : Fragment(), CellClickListener {
         itemTouchHelper.attachToRecyclerView(binding.sleepRv)
     }
 
-    private fun dialogDatePicker(view: TextView) {
-        val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setSelection(MaterialDatePicker.todayInUtcMilliseconds()).setTitleText("Select Date")
-            .build()
-
-        activity?.let { datePicker.show(it.supportFragmentManager, datePicker.tag) }
-
-        datePicker.addOnPositiveButtonClickListener {
-            view.text = datePicker.headerText
-        }
-        datePicker.addOnNegativeButtonClickListener {
-        }
-    }
-
-    private fun addSleepDialog() {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-        val binding = SleepDialogBinding.inflate(LayoutInflater.from(context))
-        builder.setView(binding.root)
-
-        binding.date = dateFormatter.getToday()
-
-        binding.hoursPicker.apply {
-            minValue = 3
-            maxValue = 12
-        }
-        binding.minutesPicker.apply {
-            minValue = 0
-            maxValue = 60
-        }
-
-        binding.dateButton.setOnClickListener {
-            dialogDatePicker(binding.dateText)
-        }
-
-        fun returnParameters(): Int? {
-            return when (binding.chipGroup.checkedChipId) {
-                R.id.chip_1 -> {
-                    1
-                }
-                R.id.chip_2 -> {
-                    2
-                }
-                R.id.chip_3 -> {
-                    3
-                }
-                R.id.chip_4 -> {
-                    4
-                }
-                R.id.chip_5 -> {
-                    5
-                }
-                else -> {
-                    return null
-                }
-            }
-        }
-
-        builder.apply {
-            setPositiveButton("Add") { _, _ ->
-                val stringToDate = dateFormatter.stringToDate(binding.dateText.text.toString())
-                val checkedChip = returnParameters()
-                val duration =
-                    dateFormatter.getTime(binding.hoursPicker.value, binding.minutesPicker.value)
-
-                if (checkedChip != null && stringToDate != null) {
-
-                    lifecycleScope.launch {
-                        val data = viewModel.check(stringToDate)
-                        Log.d("data", data.toString())
-                    }
-
-                    viewModel.addSleep(stringToDate, duration, checkedChip)
-                }
-            }
-            setNeutralButton("Cancel") { _, _ ->
-
-            }
-            show()
-        }
-    }
 
     private val fabListener = View.OnClickListener {
         when (it) {
             binding.floatingActionButton -> {
-                addSleepDialog()
+                viewModel.setSleepItem(null)
+                Log.d("sleepitem", viewModel.sleepItem.value.toString())
+                val dialog = DialogFragment().apply {
+                    setStyle(STYLE_NORMAL, R.style.Theme_SleepLog_Dialog_FullScreen)
+                }
+                activity?.supportFragmentManager?.let { it1 -> dialog.show(it1, "SLEEPDIALOG") }
             }
         }
     }
 
-    private fun editSleepDialog(duration: Long, quality: Int, date: Date, id: Long) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-        val binding = SleepDialogBinding.inflate(LayoutInflater.from(context))
-        builder.setView(binding.root)
 
-        binding.date = date
-
-
-        binding.hoursPicker.apply {
-            minValue = 0
-            maxValue = 24
-            value = dateFormatter.getHours(duration)
+    override fun onCellClickListener(sleepItem: Sleep) {
+        viewModel.setSleepItem(sleepItem)
+        Log.d("sleepitem", viewModel.sleepItem.value.toString())
+        val dialog = DialogFragment().apply {
+            setStyle(STYLE_NORMAL, R.style.Theme_SleepLog_Dialog_FullScreen)
         }
-        binding.minutesPicker.apply {
-            minValue = 0
-            maxValue = 60
-            value = dateFormatter.getMinutes(duration)
-        }
-
-        when (quality) {
-            1 -> {
-                binding.chipGroup.check(R.id.chip_1)
-            }
-            2 -> {
-                binding.chipGroup.check(R.id.chip_2)
-            }
-            3 -> {
-                binding.chipGroup.check(R.id.chip_3)
-            }
-            4 -> {
-                binding.chipGroup.check(R.id.chip_4)
-            }
-            5 -> {
-                binding.chipGroup.check(R.id.chip_5)
-            }
-        }
-
-        fun returnParameters(): Int? {
-            return when (binding.chipGroup.checkedChipId) {
-                R.id.chip_1 -> {
-                    1
-                }
-                R.id.chip_2 -> {
-                    2
-                }
-                R.id.chip_3 -> {
-                    3
-                }
-                R.id.chip_4 -> {
-                    4
-                }
-                R.id.chip_5 -> {
-                    5
-                }
-                else -> {
-                    return null
-                }
-            }
-        }
-
-        builder.apply {
-            setPositiveButton("Update") { _, _ ->
-                val timeInMillis =
-                    dateFormatter.getTime(binding.hoursPicker.value, binding.minutesPicker.value)
-
-                if (timeInMillis != duration && returnParameters() != quality) {
-                    viewModel.updateSleepDuration(timeInMillis, id)
-                    returnParameters()?.let { viewModel.updateSleepQuality(it, id) }
-                }
-                if (timeInMillis != duration && returnParameters() == quality) {
-                    viewModel.updateSleepDuration(timeInMillis, id)
-                }
-                if (timeInMillis == duration && returnParameters() != quality) {
-                    returnParameters()?.let { viewModel.updateSleepQuality(it, id) }
-                }
-            }
-            setNeutralButton("Cancel") { _, _ ->
-
-            }
-            show()
-        }
-    }
-
-    override fun onCellClickListener(duration: Long, quality: Int, date: Date, id: Long) {
-        editSleepDialog(duration, quality, date, id)
+        activity?.supportFragmentManager?.let { it1 -> dialog.show(it1, "SLEEPDIALOG") }
     }
 }
