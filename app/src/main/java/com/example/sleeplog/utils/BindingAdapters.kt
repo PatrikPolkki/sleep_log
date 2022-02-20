@@ -1,6 +1,5 @@
 package com.example.sleeplog.utils
 
-import android.util.Log
 import android.widget.NumberPicker
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
@@ -67,7 +66,6 @@ class BindingAdapters @Inject constructor(private val dateFormatter: DateAndTime
     @BindingAdapter("pickerHourValue")
     fun bindPickerHourValue(view: NumberPicker, sleep: Sleep?) {
         val value = sleep?.let { dateFormatter.getHours(it.sleepDuration) }
-        Log.d("hour", sleep.toString())
         view.minValue = 3
         view.maxValue = 12
 
