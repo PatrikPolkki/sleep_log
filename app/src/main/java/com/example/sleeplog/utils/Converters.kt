@@ -3,6 +3,9 @@ package com.example.sleeplog.utils
 import androidx.room.TypeConverter
 import java.util.*
 
+/**
+ * Converters for database
+ */
 object Converters {
     /**
      * Converts [value] to Date

@@ -4,4 +4,5 @@ import com.example.sleeplog.database.Sleep
 
 interface CellClickListener {
     fun onCellClickListener(sleepItem: Sleep)
+    fun onCellLongClickListener(sleepItem: Sleep)
 }

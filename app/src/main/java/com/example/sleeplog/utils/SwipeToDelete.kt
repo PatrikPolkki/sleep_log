@@ -11,8 +11,6 @@ import com.example.sleeplog.R
 /**
  * SimpleCallBack for handling swipe left to delete feature
  * Draws a red canvas with icon to represent the deleting
- *
- * @author Patrik Pölkki
  */
 
 abstract class SwipeToDelete(context: Context) :

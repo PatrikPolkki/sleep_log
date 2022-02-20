@@ -10,6 +10,10 @@ import com.google.android.material.chip.ChipGroup
 import java.util.*
 import javax.inject.Inject
 
+/**
+ * Binding adapters for various views
+ * BindingAdapters wrapped to inside a class to make constructor injection possible
+ */
 class BindingAdapters @Inject constructor(private val dateFormatter: DateAndTimeFormatter) {
     @BindingAdapter("sleepDay")
     fun bindSleepDay(view: TextView, date: Date) {
@@ -17,20 +21,15 @@ class BindingAdapters @Inject constructor(private val dateFormatter: DateAndTime
     }
 
     @BindingAdapter("sleepDuration")
-    fun bindSleepDuration(view: TextView, duration: Long) {
-        val hours = dateFormatter.getHours(duration)
-        val minutes = dateFormatter.getMinutes(duration)
-
-        view.text = view.context.getString(R.string.duration_time, hours, minutes)
-    }
-
-    @BindingAdapter("sleepAvg")
-    fun bindSleepAvg(view: TextView, duration: Long?) {
-        Log.d("durationssssss", duration.toString())
+    fun bindSleepDuration(view: TextView, duration: Long?) {
         val hours = duration?.let { dateFormatter.getHours(it) }
         val minutes = duration?.let { dateFormatter.getMinutes(it) }
 
-        view.text = view.context.getString(R.string.duration_time, hours, minutes)
+        if (hours != null && minutes != null) {
+            view.text = view.context.getString(R.string.duration_time, hours, minutes)
+        } else {
+            view.text = view.context.getString(R.string.empty_duration)
+        }
     }
 
     @BindingAdapter("sleepDate")
@@ -79,7 +78,7 @@ class BindingAdapters @Inject constructor(private val dateFormatter: DateAndTime
     fun bindPickerMinuteValue(view: NumberPicker, sleep: Sleep?) {
         val value = sleep?.let { dateFormatter.getMinutes(it.sleepDuration) }
         view.minValue = 0
-        view.maxValue = 60
+        view.maxValue = 59
         view.value = value ?: 0
     }
 

@@ -12,9 +12,9 @@
         <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/font/font_thin.xml" value="0.1" />
         <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/font/poppins.xml" value="0.284375" />
         <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/layout/activity_main.xml" value="0.1" />
-        <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/layout/fragment_main.xml" value="0.2" />
+        <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/layout/fragment_main.xml" value="0.4" />
         <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/layout/sleep_dialog.xml" value="0.264" />
-        <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/layout/sleep_item.xml" value="0.536" />
+        <entry key="..\:/Users/patep/AndroidStudioProjects/SleepLog/app/src/main/res/layout/sleep_item.xml" value="0.4" />
       </map>
     </option>
   </component>

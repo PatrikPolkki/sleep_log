@@ -9,6 +9,10 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import javax.inject.Provider
 
+/**
+ * Application class for Hilt
+ * Initialize usage of binding adapters
+ */
 @HiltAndroidApp
 class BaseApplication : Application() {
     @Inject

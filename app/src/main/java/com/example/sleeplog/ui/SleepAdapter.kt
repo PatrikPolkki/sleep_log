@@ -8,9 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sleeplog.database.Sleep
 import com.example.sleeplog.databinding.SleepItemBinding
 
+/**
+ * ListAdapter for sleep log items
+ * bind sleepItem
+ */
 class SleepAdapter(private val cellClickListener: CellClickListener) :
     ListAdapter<Sleep, SleepAdapter.ViewHolder>(DiffCallback) {
 
+    // Handles a changes in incoming list
     companion object {
         private val DiffCallback = object : DiffUtil.ItemCallback<Sleep>() {
             override fun areItemsTheSame(oldItem: Sleep, newItem: Sleep): Boolean {
@@ -38,6 +43,10 @@ class SleepAdapter(private val cellClickListener: CellClickListener) :
 
         holder.itemView.setOnClickListener {
             cellClickListener.onCellClickListener(item)
+        }
+        holder.itemView.setOnLongClickListener {
+            cellClickListener.onCellLongClickListener(item)
+            true
         }
     }
 }

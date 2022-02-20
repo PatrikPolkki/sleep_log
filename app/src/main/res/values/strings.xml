@@ -2,7 +2,8 @@
     <string name="app_name">SLEEP LOG</string>
     <string name="default_text">Add your first sleep</string>
     <string name="duration">Duration</string>
-    <string name="duration_time">%02d.%02d H</string>
+    <string name="duration_time">%d.%d H</string>
+    <string name="empty_duration">0H</string>
     <string name="quality">Quality</string>
     <string name="fab_text">Add Sleep</string>
     <string name="minutes">Min</string>

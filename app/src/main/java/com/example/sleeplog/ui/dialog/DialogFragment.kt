@@ -2,7 +2,6 @@ package com.example.sleeplog.ui.dialog
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,29 +34,34 @@ class DialogFragment : DialogFragment() {
     ): View {
         binding = SleepDialogBinding.inflate(layoutInflater)
 
+        // initialize databinding
         binding.apply {
             dialogViewModel = viewModel
             lifecycleOwner = this@DialogFragment
         }
 
-        initializeDialog()
+        initializeDialogButtons()
 
+        return binding.root
+    }
+
+    private fun initializeDialogButtons() {
+        binding.dateButton.setOnClickListener {
+            dialogDatePicker(binding.dateText)
+        }
         binding.cancelButton.setOnClickListener {
             dismiss()
         }
         binding.addButton.setOnClickListener {
             addSleepDialog()
         }
-
-        return binding.root
     }
 
-    private fun initializeDialog() {
-        binding.dateButton.setOnClickListener {
-            dialogDatePicker(binding.dateText)
-        }
-    }
-
+    /**
+     * Opens datepicker dialog
+     * takes date textview as parameter
+     * set selected date to date textview using [dateFormatter]
+     */
     private fun dialogDatePicker(view: TextView) {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setSelection(MaterialDatePicker.todayInUtcMilliseconds()).setTitleText("Select Date")
@@ -66,29 +70,37 @@ class DialogFragment : DialogFragment() {
         activity?.let { datePicker.show(it.supportFragmentManager, null) }
 
         datePicker.addOnPositiveButtonClickListener {
-            view.text = datePicker.headerText
+            view.text = dateFormatter.longToDate(datePicker.selection)
         }
         datePicker.addOnNegativeButtonClickListener {
         }
     }
 
+    /**
+     * Add new sleep record to database
+     * updates existing sleep record if it is passed to [viewModel]
+     */
     private fun addSleepDialog() {
         lifecycleScope.launch {
-            val id = viewModel.sleepItem.value?.id
+            val sleepItem = viewModel.sleepItem.value
+            // format date textview value to date
             val date = dateFormatter.stringToDate(binding.dateText.text.toString())
+            // check which chip is checked
             val quality = checkedChip()
+            // convert timepicker values to Long
             val duration =
                 dateFormatter.getTime(binding.hoursPicker.value, binding.minutesPicker.value)
-            val existingDAte = date?.let { viewModel.checkDate(it) }
 
-            Log.d("ARVO", id.toString())
+            // check if sleep record exist in given date
+            val dateExists = date?.let { viewModel.checkDate(it) }
 
-            if (quality != null && date != null) {
-                if (id == null) {
-                    if (existingDAte == null) {
+            if (date != null) {
+                if (sleepItem == null) {
+                    if (dateExists == null) {
                         viewModel.addSleep(date, duration, quality)
                         dismiss()
                     } else {
+                        // if sleep record exists in given day, ask permission to replace it
                         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
                         builder.apply {
                             setTitle("Replace Existing Sleep Log")
@@ -96,21 +108,25 @@ class DialogFragment : DialogFragment() {
                             setNegativeButton("Cancel") { _, _ ->
                             }
                             setPositiveButton("Replace") { _, _ ->
-                                viewModel.updateSleep(duration, quality, date, existingDAte)
+                                viewModel.updateSleep(duration, quality, date, dateExists)
                                 dismiss()
                             }
                             show()
                         }
                     }
                 } else {
-                    viewModel.updateSleep(duration, quality, date, id)
+                    viewModel.updateSleep(duration, quality, date, sleepItem.id)
                     dismiss()
                 }
             }
         }
     }
 
-    private fun checkedChip(): Int? {
+
+    /**
+     * check which chip is checked
+     */
+    private fun checkedChip(): Int {
         return when (binding.chipGroup.checkedChipId) {
             R.id.chip_1 -> {
                 1
@@ -128,7 +144,7 @@ class DialogFragment : DialogFragment() {
                 5
             }
             else -> {
-                return null
+                return 3
             }
         }
     }

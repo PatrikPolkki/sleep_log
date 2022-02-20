@@ -5,6 +5,10 @@ import com.example.sleeplog.utils.BindingAdapters
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 
+/**
+ * EntryPoint for DataBindingComponent
+ */
+
 @EntryPoint
 @BindingScope
 @InstallIn(BindingComponent::class)

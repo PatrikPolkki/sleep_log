@@ -1,27 +1,39 @@
 package com.example.sleeplog.utils
 
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+/**
+ * Class for date and time formatter functions
+ */
 class DateAndTimeFormatter @Inject constructor() {
 
     fun stringToDate(date: String): Date? {
-        return DateFormat.getDateInstance(DateFormat.MEDIUM).parse(date)
+        return SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).parse(date)
+    }
+
+    fun longToDate(selectedDate: Long?): String {
+        val date = selectedDate?.let { Date(it) }
+        val format = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
+        return if (date != null) {
+            format.format(date)
+        } else {
+            format.format(getToday())
+        }
     }
 
     fun dateToWeekday(date: Date): String {
-        return SimpleDateFormat("EEEE", Locale.getDefault()).format(date)
+        return SimpleDateFormat("EEEE", Locale.ENGLISH).format(date)
     }
 
     fun dateShort(date: Date): String {
-        return DateFormat.getDateInstance(DateFormat.SHORT).format(date)
+        return SimpleDateFormat("dd/MM/yy", Locale.ENGLISH).format(date)
     }
 
     fun dateMedium(date: Date): String {
-        return DateFormat.getDateInstance(DateFormat.MEDIUM).format(date)
+        return SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).format(date)
     }
 
     fun getTime(hour: Int, minute: Int): Long {

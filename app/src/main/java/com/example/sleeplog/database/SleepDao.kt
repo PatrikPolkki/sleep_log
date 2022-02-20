@@ -6,6 +6,9 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
+/**
+ * Queries for sleep database
+ */
 @Dao
 interface SleepDao {
     @Insert

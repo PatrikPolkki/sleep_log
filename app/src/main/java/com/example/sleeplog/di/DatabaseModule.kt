@@ -11,6 +11,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * Database module which provides an instance of sleepDao
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {

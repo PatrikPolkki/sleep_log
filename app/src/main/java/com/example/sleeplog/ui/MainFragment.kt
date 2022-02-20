@@ -42,11 +42,13 @@ class MainFragment : Fragment(), CellClickListener {
     ): View {
         binding = FragmentMainBinding.inflate(layoutInflater)
 
+        // initialize databinding
         binding.apply {
             mainViewModel = viewModel
             lifecycleOwner = this@MainFragment
         }
 
+        // initialize recyclerview
         binding.sleepRv.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = SleepAdapter(this@MainFragment)
@@ -59,16 +61,17 @@ class MainFragment : Fragment(), CellClickListener {
 
 
         setSleepListToRV()
+        setSwipeHandler()
+
+        binding.floatingActionButton.setOnClickListener(fabListener)
 
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.floatingActionButton.setOnClickListener(fabListener)
-        setSwipeHandler()
-    }
-
+    /**
+     * Collect list flow coming from [viewModel]
+     * submit collected list to recyclerview adapter
+     */
     private fun setSleepListToRV() {
         val adapter = binding.sleepRv.adapter as SleepAdapter
         lifecycleScope.launch {
@@ -85,34 +88,50 @@ class MainFragment : Fragment(), CellClickListener {
         }
     }
 
+    /**
+     * Swipe to delete
+     * attach swipeHandler to recyclerview
+     * ask the user for confirmation in a pop-up window
+     */
     private fun setSwipeHandler() {
-        val swipeHandler = object : SwipeToDelete(requireContext()) {
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val adapter = binding.sleepRv.adapter as SleepAdapter
-                when (direction) {
-                    ItemTouchHelper.LEFT -> {
-                        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-                        builder.apply {
-                            setTitle("Delete Sleep Item")
-                            setMessage("Are you sure you want to delete this sleep item?")
-                            setNegativeButton("Cancel") { _, _ ->
-                                adapter.notifyItemChanged(viewHolder.adapterPosition)
+        context?.let {
+            val swipeHandler = object : SwipeToDelete(it) {
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val adapter = binding.sleepRv.adapter as SleepAdapter
+                    when (direction) {
+                        ItemTouchHelper.LEFT -> {
+                            val sleepItem = adapter.currentList[viewHolder.adapterPosition]
+                            val builder: AlertDialog.Builder = AlertDialog.Builder(it)
+                            builder.apply {
+                                setTitle("Delete Sleep Record")
+                                setMessage(
+                                    "Are you sure you want to delete this sleep record on ${
+                                        dateFormatter.dateMedium(
+                                            sleepItem.createdAt
+                                        )
+                                    }?"
+                                )
+                                setNegativeButton("Cancel") { _, _ ->
+                                    adapter.notifyItemChanged(viewHolder.adapterPosition)
+                                }
+                                setPositiveButton("Delete") { _, _ ->
+                                    viewModel.deleteSleep(sleepItem.id)
+                                }
+                                show()
                             }
-                            setPositiveButton("Delete") { _, _ ->
-                                val sleepItem = adapter.currentList[viewHolder.adapterPosition]
-                                viewModel.deleteSleep(sleepItem.id)
-                            }
-                            show()
                         }
                     }
                 }
             }
+            val itemTouchHelper = ItemTouchHelper(swipeHandler)
+            itemTouchHelper.attachToRecyclerView(binding.sleepRv)
         }
-        val itemTouchHelper = ItemTouchHelper(swipeHandler)
-        itemTouchHelper.attachToRecyclerView(binding.sleepRv)
     }
 
-
+    /**
+     * floating action button opens custom dialog with style
+     * send null to "sleepItem" livedata in [viewModel]
+     */
     private val fabListener = View.OnClickListener {
         when (it) {
             binding.floatingActionButton -> {
@@ -127,6 +146,10 @@ class MainFragment : Fragment(), CellClickListener {
     }
 
 
+    /**
+     * By clicking cell on recyclerview opens custom dialog with style
+     * send [Sleep] to "sleepItem" livedata in [viewModel]
+     */
     override fun onCellClickListener(sleepItem: Sleep) {
         viewModel.setSleepItem(sleepItem)
         Log.d("sleepitem", viewModel.sleepItem.value.toString())
@@ -134,5 +157,25 @@ class MainFragment : Fragment(), CellClickListener {
             setStyle(STYLE_NORMAL, R.style.Theme_SleepLog_Dialog_FullScreen)
         }
         activity?.supportFragmentManager?.let { it1 -> dialog.show(it1, "SLEEPDIALOG") }
+    }
+
+    override fun onCellLongClickListener(sleepItem: Sleep) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+        builder.apply {
+            setTitle("Delete Sleep Record")
+            setMessage(
+                "Are you sure you want to delete this sleep record on ${
+                    dateFormatter.dateMedium(
+                        sleepItem.createdAt
+                    )
+                }?"
+            )
+            setNegativeButton("Cancel") { _, _ ->
+            }
+            setPositiveButton("Delete") { _, _ ->
+                viewModel.deleteSleep(sleepItem.id)
+            }
+            show()
+        }
     }
 }
