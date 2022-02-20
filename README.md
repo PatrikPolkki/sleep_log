@@ -1,5 +1,5 @@
 # Sleep Log
-Sleep Log is an android application made via Kotlin which lets user to track his sleeps. User can insert one sleep per day which contains values of date, sleep duration and sleep quality.
+Sleep Log is an android application made via Kotlin that lets users track their sleep. Users can insert one sleep per day which contains values of date, sleep duration, and sleep quality.
 
 ## Technologies
 Technologies used in development: 
