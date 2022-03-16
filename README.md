@@ -7,7 +7,6 @@ Technologies used in development:
  - Coroutines and Flow
  - MVVM pattern
  - Hilt
- - Navigation component
  
  
  
